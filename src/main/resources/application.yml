@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerGaseServiceId: true
+      routes:
+        - id: employees-service
+          uri: lb://employees-offices-micro-service
+          predicates:
+            - Path=/api/employees/**,/api/offices/**
+          filters:
+          - name: CircuitBreaker
+            args:
+              name: employees-offices-fallback
+              fallbackuri: forward:/employeeservicefallback
+        - id: customers-service
+          uri: lb://customers-payments-micro-service
+          predicates:
+            - Path=/api/customers/**,/api/payments/**
+          filters:
+          - name: CircuitBreaker
+            args:
+              name: custoemrs-payments-fallback
+              fallbackuri: forward:/customerservicefallback
+        - id: order-service
+          uri: lb://order-microservice
+          predicates:
+            - Path=/orderapi/**
+          filters:
+          - name: CircuitBreaker
+            args:
+              name: orderdetails-fallback
+              fallbackuri: forward:/orderservicefallback
+        - id: productline-service
+          uri: lb://productline-microservice
+          predicates:
+            - Path=/productlineapi/**
+          filters:
+          - name: CircuitBreaker
+            args:
+              name: productline-fallback
+              fallbackuri: forward:/orderservicefallback                  
+
+server:
+  port: ${PORT:0}
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+logginf:
+  level:
+    root: WARN
+    com.microservice.api.gateway.demo: TRACE      
